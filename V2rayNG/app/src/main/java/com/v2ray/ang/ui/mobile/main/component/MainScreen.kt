@@ -201,6 +201,11 @@ fun MainScreen(
                         isRunning = isRunning,
                         onAction = onAction
                     )
+                    SelectedServerCard(
+                        mainViewModel = mainViewModel,
+                        groupId = groups.getOrNull(pagerState.currentPage)?.id.orEmpty(),
+                        selectedGuid = selectedGuid
+                    )
                     if (groups.size > 1) {
                         GroupTabBar(
                             groups = groups,
