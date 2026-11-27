@@ -196,6 +196,11 @@ fun MainScreen(
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         )
                 ) {
+                    ConnectHero(
+                        displayText = displayText,
+                        isRunning = isRunning,
+                        onAction = onAction
+                    )
                     if (groups.size > 1) {
                         GroupTabBar(
                             groups = groups,
@@ -241,21 +246,12 @@ fun MainScreen(
                                 start = 0.dp,
                                 top = 0.dp,
                                 end = 0.dp,
-                                bottom = bottomBarHeight + 8.dp
+                                bottom = 8.dp
                             )
                         )
                     }
                 }
             }
-                MainBottomBar(
-                    displayText = displayText,
-                    isRunning = isRunning,
-                    isDarkTheme = isDarkTheme,
-                    onAction = onAction,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .onSizeChanged { bottomBarHeightPx = it.height }
-                )
             }
         }
     }
