@@ -134,6 +134,30 @@ fun ConnectHero(
                 .fillMaxWidth()
                 .height(440.dp)
         ) {
+            Image(
+                painter = painterResource(R.drawable.eagle_hero),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .align(Alignment.TopCenter)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            0f to bg,
+                            0.25f to Color.Transparent,
+                            0.65f to Color.Transparent,
+                            1f to bg
+                        )
+                    )
+            )
+
             Box(
                 modifier = Modifier
                     .size(250.dp)
