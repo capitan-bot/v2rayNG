@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.handler.AppNotificationManager
@@ -66,51 +67,51 @@ private val LightColor = lightColorScheme(
 )
 
 private val DarkColor = darkColorScheme(
-    primary = Color(0xFFC0C0C0), // Silver Gray
-    onPrimary = Color(0xFF303030), // Dark Gray
-    primaryContainer = Color(0xFF474747), // Gray
-    onPrimaryContainer = Color(0xFFE0E0E0), // Light Gray
-    secondary = Color(0xFFf97910), // Orange
-    onSecondary = Color(0xFF4E2600), // Dark Brown
-    secondaryContainer = Color(0xFF6F3800), // Brown
-    onSecondaryContainer = Color(0xFFFFE8D6), // Pale Orange
-    tertiary = Color(0xFF83D6B5), // Mint Green
-    onTertiary = Color(0xFF00382E), // Dark Teal
-    tertiaryContainer = Color(0xFF005143), // Teal
-    onTertiaryContainer = Color(0xFFA0F2D0), // Light Green
-    error = Color(0xFFFFB4AB), // Light Red
-    errorContainer = Color(0xFF93000A), // Dark Red
-    onError = Color(0xFF690005), // Deep Red
-    onErrorContainer = Color(0xFFFFDAD6), // Light Red
-    background = Color(0xFF1C1B1F), // Near Black
-    onBackground = Color(0xFFE6E1E5), // Light Gray
-    surface = Color(0xFF1C1B1F), // Near Black
-    onSurface = Color(0xFFE6E1E5), // Light Gray
-    surfaceVariant = Color(0xFF49454F), // Dark Gray
-    onSurfaceVariant = Color(0xFFCAC4D0), // Light Gray
-    outline = Color(0xFF938F99), // Grayish Purple
-    outlineVariant = Color(0xFF49454F), // Dark Gray
-    inverseSurface = Color(0xFFE6E1E5), // Light Gray
-    inverseOnSurface = Color(0xFF1C1B1F), // Near Black
-    inversePrimary = Color(0xFF000000), // Black
-    scrim = Color(0xFF000000), // Black
-    surfaceTint = Color(0xFFC0C0C0), // Silver Gray
-    surfaceContainerLowest = Color(0xFF0F0F12), // Near Black
-    surfaceContainerLow = Color(0xFF1A191D), // Dark Gray
-    surfaceContainer = Color(0xFF1E1D21), // Dark Gray
-    surfaceContainerHigh = Color(0xFF282729), // Dark Gray
-    surfaceContainerHighest = Color(0xFF333234), // Dark Gray
+    primary = Color(0xFF8B5CF6),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF4C1D95),
+    onPrimaryContainer = Color(0xFFEDE9FE),
+    secondary = Color(0xFFA78BFA),
+    onSecondary = Color(0xFF1E0B3F),
+    secondaryContainer = Color(0xFF3B1F6E),
+    onSecondaryContainer = Color(0xFFEDE9FE),
+    tertiary = Color(0xFF22D3A0),
+    onTertiary = Color(0xFF00382E),
+    tertiaryContainer = Color(0xFF005143),
+    onTertiaryContainer = Color(0xFFA0F2D0),
+    error = Color(0xFFFFB4AB),
+    errorContainer = Color(0xFF93000A),
+    onError = Color(0xFF690005),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF0B0716),
+    onBackground = Color(0xFFEDE9FE),
+    surface = Color(0xFF0B0716),
+    onSurface = Color(0xFFEDE9FE),
+    surfaceVariant = Color(0xFF241A3D),
+    onSurfaceVariant = Color(0xFFC4B5FD),
+    outline = Color(0xFF6D4FC2),
+    outlineVariant = Color(0xFF3A2A66),
+    inverseSurface = Color(0xFFEDE9FE),
+    inverseOnSurface = Color(0xFF0B0716),
+    inversePrimary = Color(0xFF5B21B6),
+    scrim = Color(0xFF000000),
+    surfaceTint = Color(0xFF8B5CF6),
+    surfaceContainerLowest = Color(0xFF070410),
+    surfaceContainerLow = Color(0xFF120B22),
+    surfaceContainer = Color(0xFF181030),
+    surfaceContainerHigh = Color(0xFF1F1540),
+    surfaceContainerHighest = Color(0xFF281C50),
 )
 
 // Semantic Colors
-val colorPing = Color(0xFF009966) // Green
+val colorPing = Color(0xFF22C55E)
 val colorPingRed = Color(0xFFFF0099) // Pink Red
-val colorConfigType = Color(0xFFf97910) // Orange
-val colorFabActive = Color(0xFFf97910) // Orange
+val colorConfigType = Color(0xFFA78BFA)
+val colorFabActive = Color(0xFF8B5CF6)
 val colorFabInactiveLight = Color(0xFF9C9C9C) // Gray
-val colorFabInactiveDark = Color(0xFF646464) // Dark Gray
+val colorFabInactiveDark = Color(0xFF4B3A7A)
 val dividerColorLight = Color(0xFFE0E0E0) // Light Gray
-val dividerColorDark = Color(0xFF424242) // Dark Gray
+val dividerColorDark = Color(0xFF2E2054)
 
 object ThemeManager {
     private val _themeMode = MutableStateFlow(
@@ -145,9 +146,7 @@ object ThemeManager {
 fun resolveDarkTheme(): Boolean {
     val mode by ThemeManager.themeMode.collectAsState()
     return when (mode) {
-        "1" -> false
-        "2" -> true
-        else -> isSystemInDarkTheme()
+        else -> true
     }
 }
 
@@ -161,7 +160,7 @@ fun AppTheme(
     val dynamicColor by ThemeManager.dynamicColorEnabled.collectAsState()
     val context = LocalContext.current
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        false && dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
@@ -185,7 +184,14 @@ fun AppTheme(
         LocalAppNotification provides AppNotificationManager
     ) {
         MaterialTheme(
-            colorScheme = colorScheme
+            colorScheme = colorScheme,
+            shapes = androidx.compose.material3.Shapes(
+                extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                small = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                medium = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+                large = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
+            )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 AppNotificationBridge()
