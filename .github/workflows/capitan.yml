@@ -84,10 +84,10 @@ jobs:
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
         chmod 755 gradlew
-        ./gradlew assemblePlaystoreDebug -PABI_FILTERS=arm64-v8a
+        ./gradlew assemblePlaystoreRelease -PABI_FILTERS=arm64-v8a
 
     - name: Upload APK
       uses: actions/upload-artifact@v7
       with:
-        name: capitan-arm64-debug
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*.apk
+        name: capitan-arm64-release
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk
