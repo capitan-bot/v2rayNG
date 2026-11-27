@@ -9,7 +9,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
-import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.core.LauncherManager
@@ -26,7 +25,7 @@ import com.v2ray.ang.ui.mobile.CheckUpdateActivity
 import com.v2ray.ang.ui.mobile.LogcatActivity
 import com.v2ray.ang.vm.MainViewModel
 import com.v2ray.ang.ui.mobile.PerAppProxyActivity
-import com.v2ray.ang.ui.mobile.routing.RoutingSettingActivity
+import com.v2ray.ang.ui.mobile.RoutingSettingActivity
 import com.v2ray.ang.ui.mobile.server.ProfileEditorResult
 import com.v2ray.ang.ui.mobile.server.ServerCustomConfigActivity
 import com.v2ray.ang.ui.mobile.server.ServerGroupActivity
@@ -43,15 +42,15 @@ import com.v2ray.ang.ui.mobile.server.ServerWireguardActivity
 import com.v2ray.ang.ui.mobile.SettingsActivity
 import com.v2ray.ang.ui.mobile.main.component.MainDestination
 import com.v2ray.ang.ui.mobile.main.component.MainScreen
-import com.v2ray.ang.ui.mobile.subscription.SubSettingActivity
-import com.v2ray.ang.ui.mobile.userasset.UserAssetActivity
+import com.v2ray.ang.ui.mobile.SubSettingActivity
+import com.v2ray.ang.ui.mobile.UserAssetActivity
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 
 open class MainActivity : HelperBaseComponentActivity() {
 
     protected val mainViewModel: MainViewModel by viewModels {
-        MainViewModel.Factory(application, MainRepository(application as AngApplication))
+        MainViewModel.Factory(application)
     }
 
     private val requestVpnPermission =
@@ -108,11 +107,11 @@ open class MainActivity : HelperBaseComponentActivity() {
 
     @Composable
     protected open fun MainContent(
-        viewModel: MainViewModel,
+        mainViewModel: MainViewModel,
         onAction: (MainAction) -> Unit,
         onNavigate: (MainDestination) -> Unit
     ) {
-        MainScreen(viewModel, onAction, onNavigate)
+        MainScreen(mainViewModel, onAction, onNavigate)
     }
 
     private fun handleMainAction(action: MainAction) {
