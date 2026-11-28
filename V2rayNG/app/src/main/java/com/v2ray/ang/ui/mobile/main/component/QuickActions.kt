@@ -122,7 +122,7 @@ fun QuickActions(
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Tile("تست پینگ", Modifier.weight(1f), { onAction(MainAction.TestCurrentServer) }) {
+            Tile("تست پینگ", Modifier.weight(1f), { onAction(MainAction.TestAllServers) }) {
                 BoltGlyph(TileIcon)
             }
             Tile("لیست سرورها", Modifier.weight(1f), onListClick) {
