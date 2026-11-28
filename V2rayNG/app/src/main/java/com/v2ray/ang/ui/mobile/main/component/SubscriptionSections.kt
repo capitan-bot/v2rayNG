@@ -244,7 +244,7 @@ private fun SubscriptionCard(
                         scope.launch {
                             onAction(MainAction.SelectGroup(group.id))
                             delay(400)
-                            onAction(MainAction.TestAllServers)
+                            onAction(MainAction.TestRealAllServers)
                         }
                     },
                     modifier = Modifier.size(40.dp)

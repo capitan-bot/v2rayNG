@@ -85,6 +85,17 @@ private fun PowerGlyph(color: Color, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+private fun CheckGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = size.minDimension * 0.14f
+        drawLine(color, Offset(w * 0.16f, h * 0.54f), Offset(w * 0.42f, h * 0.78f), strokeWidth = stroke, cap = StrokeCap.Round)
+        drawLine(color, Offset(w * 0.42f, h * 0.78f), Offset(w * 0.86f, h * 0.24f), strokeWidth = stroke, cap = StrokeCap.Round)
+    }
+}
+
 /**
  * Hero: smaller eagle on top, globe below, round connect button over the globe.
  * Idle: purple ring, power icon, "connect" text. Connected: neon green ring, a square, the text and a timer.
@@ -214,12 +225,7 @@ fun ConnectHero(
                 ) {
                     if (isRunning) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(NeonGreen)
-                            )
+                            CheckGlyph(color = NeonGreen, modifier = Modifier.size(40.dp))
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 text = "متصل شد",
