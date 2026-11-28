@@ -44,11 +44,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.handler.TrafficMonitor
+import com.v2ray.ang.handler.TrafficSnapshot
 import com.v2ray.ang.ui.mobile.main.MainAction
 import java.util.Locale
 import kotlinx.coroutines.delay
 
 private val NeonGreen = Color(0xFF22FF88)
+private val ConnectedBlue = Color(0xFF6D7CFF)
 private val IdlePurple = Color(0xFF8B5CF6)
 private val IdlePurpleLight = Color(0xFFC4A6FF)
 private val ButtonBg = Color(0xFF140D26)
@@ -96,6 +110,101 @@ private fun CheckGlyph(color: Color, modifier: Modifier = Modifier) {
     }
 }
 
+private val DownColor = Color(0xFF38BDF8)
+private val UpColor = Color(0xFFA855F7)
+private const val CHART_POINTS = 40
+
+private fun fmtSize(b: Long): String = when {
+    b >= 1_073_741_824L -> String.format(Locale.US, "%.2f GB", b / 1_073_741_824.0)
+    b >= 1_048_576L -> String.format(Locale.US, "%.1f MB", b / 1_048_576.0)
+    b >= 1024L -> String.format(Locale.US, "%.0f KB", b / 1024.0)
+    else -> b.toString() + " B"
+}
+
+private fun padPoints(l: List<Float>): List<Float> =
+    List((CHART_POINTS - l.size).coerceAtLeast(0)) { 0f } + l
+
+private fun DrawScope.curve(points: List<Float>, maxV: Float, fill: Boolean): Path {
+    val path = Path()
+    if (points.size < 2) return path
+    val w = size.width
+    val h = size.height
+    val step = w / (points.size - 1)
+    val y = { v: Float -> h * 0.95f - (v / maxV).coerceIn(0f, 1f) * h * 0.85f }
+    path.moveTo(0f, y(points[0]))
+    for (i in 1 until points.size) {
+        val x0 = (i - 1) * step
+        val x1 = i * step
+        val cx = (x0 + x1) / 2f
+        path.cubicTo(cx, y(points[i - 1]), cx, y(points[i]), x1, y(points[i]))
+    }
+    if (fill) {
+        path.lineTo(w, h)
+        path.lineTo(0f, h)
+        path.close()
+    }
+    return path
+}
+
+@Composable
+private fun StatCard(
+    arrow: String,
+    color: Color,
+    label: String,
+    total: Long,
+    speed: Long,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(16.dp)
+    Column(
+        modifier = modifier
+            .clip(shape)
+            .background(Brush.verticalGradient(listOf(Color(0xFF231640), Color(0xFF150E27))))
+            .border(1.dp, Color(0xFF3F2C6E), shape)
+            .padding(vertical = 8.dp, horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = arrow + " " + fmtSize(total), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(text = fmtSize(speed) + "/s", color = color, fontSize = 12.sp, maxLines = 1)
+        Text(text = label, color = Color(0xFFB9A8E8), fontSize = 10.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun TrafficPanel(t: TrafficSnapshot, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(18.dp)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(104.dp)
+                    .clip(shape)
+                    .background(Brush.verticalGradient(listOf(Color(0xFF1B1233), Color(0xFF110A22))))
+                    .border(1.dp, Color(0xFF3F2C6E), shape)
+            ) {
+                val down = padPoints(t.downHistory)
+                val up = padPoints(t.upHistory)
+                val maxV = maxOf(20_480f, (down + up).maxOrNull() ?: 0f)
+                for (i in 1..3) {
+                    val gy = size.height * i / 4f
+                    drawLine(Color(0x22FFFFFF), Offset(0f, gy), Offset(size.width, gy), strokeWidth = 1f)
+                }
+                val line = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+                drawPath(curve(down, maxV, true), Brush.verticalGradient(listOf(DownColor.copy(alpha = 0.35f), Color.Transparent)))
+                drawPath(curve(down, maxV, false), DownColor, style = line)
+                drawPath(curve(up, maxV, true), Brush.verticalGradient(listOf(UpColor.copy(alpha = 0.35f), Color.Transparent)))
+                drawPath(curve(up, maxV, false), UpColor, style = line)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                StatCard("\u2193", DownColor, "دریافت", t.downTotal, t.downSpeed, Modifier.weight(1f))
+                StatCard("\u2191", UpColor, "ارسال", t.upTotal, t.upSpeed, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
 /**
  * Hero: smaller eagle on top, globe below, round connect button over the globe.
  * Idle: purple ring, power icon, "connect" text. Connected: neon green ring, a square, the text and a timer.
@@ -107,8 +216,8 @@ fun ConnectHero(
     onAction: (MainAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val ringColor = if (isRunning) NeonGreen else IdlePurple
-    val ringLight = if (isRunning) NeonGreen else IdlePurpleLight
+    val ringColor = if (isRunning) ConnectedBlue else IdlePurple
+    val ringLight = if (isRunning) Color(0xFF38BDF8) else IdlePurpleLight
     val bg = MaterialTheme.colorScheme.background
 
     var startMillis by rememberSaveable { mutableStateOf(0L) }
@@ -123,9 +232,16 @@ fun ConnectHero(
         } else {
             startMillis = 0L
             elapsedSeconds = 0L
+            TrafficMonitor.reset()
         }
     }
 
+    val ctx = LocalContext.current
+    DisposableEffect(Unit) {
+        val receiver = TrafficMonitor.register(ctx)
+        onDispose { TrafficMonitor.unregister(ctx, receiver) }
+    }
+    val traffic by TrafficMonitor.state.collectAsStateWithLifecycle()
     val transition = rememberInfiniteTransition(label = "glow")
     val pulse by transition.animateFloat(
         initialValue = 0.4f,
@@ -145,8 +261,11 @@ fun ConnectHero(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .height(if (isRunning) 480.dp else 400.dp)
         ) {
+            if (isRunning) {
+                TrafficPanel(traffic, Modifier.align(Alignment.TopCenter))
+            } else {
             Image(
                 painter = painterResource(R.drawable.eagle_hero),
                 contentDescription = null,
@@ -170,6 +289,7 @@ fun ConnectHero(
                         )
                     )
             )
+            }
             Image(
                 painter = painterResource(R.drawable.globe_hero),
                 contentDescription = null,
@@ -217,7 +337,7 @@ fun ConnectHero(
                         .background(ButtonBg)
                         .border(
                             width = 4.dp,
-                            brush = Brush.verticalGradient(listOf(ringLight, ringColor)),
+                            brush = if (isRunning) Brush.sweepGradient(listOf(Color(0xFF38BDF8), Color(0xFF8B5CF6), Color(0xFFC026D3), Color(0xFF38BDF8))) else Brush.verticalGradient(listOf(ringLight, ringColor)),
                             shape = CircleShape
                         )
                         .clickable { onAction(MainAction.ToggleService) },

@@ -32,9 +32,11 @@ object NotificationManager {
     private const val NOTIFICATION_PENDING_INTENT_STOP_V2RAY = 1
     private const val NOTIFICATION_PENDING_INTENT_RESTART_V2RAY = 2
     private const val NOTIFICATION_ICON_THRESHOLD = 3000
-    private const val QUERY_INTERVAL_MS = 3000L
+    private const val QUERY_INTERVAL_MS = 1000L
+    private const val MIN_QUERY_GAP_MS = 700L
 
     private var lastQueryTime = 0L
+    private var notifyTick = 0
     private var mBuilder: NotificationCompat.Builder? = null
     private var speedNotificationJob: Job? = null
     private var mNotificationManager: NotificationManager? = null
@@ -44,7 +46,6 @@ object NotificationManager {
      * @param currentConfig The current profile configuration.
      */
     fun startSpeedNotification() {
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) != true) return
         if (speedNotificationJob != null || CoreServiceManager.isRunning() == false) return
 
         var lastZeroSpeed = false
@@ -232,7 +233,7 @@ object NotificationManager {
         val sinceLastQueryIn = (queryTime - lastQueryTime)
 
         // If the query interval is too short, skip this round to avoid excessive CPU usage
-        if (sinceLastQueryIn < QUERY_INTERVAL_MS) {
+        if (sinceLastQueryIn < MIN_QUERY_GAP_MS) {
             LogUtil.w(AppConfig.TAG, "Query interval too short: ${sinceLastQueryIn}ms, skipping")
             lastQueryTime = queryTime
             return lastZeroSpeed
@@ -266,6 +267,7 @@ object NotificationManager {
         val proxyTotal = proxyUplink + proxyDownlink
         val directTotal = directUplink + directDownlink
         val zeroSpeed = proxyTotal + directTotal == 0L
+        TrafficMonitor.send(getService(), proxyUplink + directUplink, proxyDownlink + directDownlink, sinceLastQueryInSeconds)
         if (!zeroSpeed || !lastZeroSpeed) {
             val text = StringBuilder()
             appendSpeedString(
@@ -279,7 +281,9 @@ object NotificationManager {
                 directUplink / sinceLastQueryInSeconds,
                 directDownlink / sinceLastQueryInSeconds
             )
-            updateNotification(text.toString(), proxyTotal, directTotal)
+            if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true && notifyTick++ % 3 == 0) {
+                updateNotification(text.toString(), proxyTotal, directTotal)
+            }
         }
         lastQueryTime = queryTime
         return zeroSpeed
