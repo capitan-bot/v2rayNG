@@ -50,6 +50,7 @@ import kotlinx.coroutines.delay
 
 private val NeonGreen = Color(0xFF22FF88)
 private val IdlePurple = Color(0xFF8B5CF6)
+private val IdlePurpleLight = Color(0xFFC4A6FF)
 private val ButtonBg = Color(0xFF140D26)
 
 private fun formatDuration(totalSeconds: Long): String {
@@ -85,7 +86,7 @@ private fun PowerGlyph(color: Color, modifier: Modifier = Modifier) {
 }
 
 /**
- * Hero: eagle picture behind a big round connect button.
+ * Hero: smaller eagle on top, globe below, round connect button over the globe.
  * Idle: purple ring, power icon, "connect" text. Connected: neon green ring, a square, the text and a timer.
  */
 @Composable
@@ -96,6 +97,7 @@ fun ConnectHero(
     modifier: Modifier = Modifier
 ) {
     val ringColor = if (isRunning) NeonGreen else IdlePurple
+    val ringLight = if (isRunning) NeonGreen else IdlePurpleLight
     val bg = MaterialTheme.colorScheme.background
 
     var startMillis by rememberSaveable { mutableStateOf(0L) }
@@ -132,7 +134,7 @@ fun ConnectHero(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(440.dp)
+                .height(400.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.eagle_hero),
@@ -140,13 +142,13 @@ fun ConnectHero(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(250.dp)
                     .align(Alignment.TopCenter)
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(250.dp)
                     .align(Alignment.TopCenter)
                     .background(
                         Brush.verticalGradient(
@@ -157,16 +159,25 @@ fun ConnectHero(
                         )
                     )
             )
+            Image(
+                painter = painterResource(R.drawable.globe_hero),
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+            )
 
             Box(
                 modifier = Modifier
-                    .size(250.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 50.dp)
+                    .size(200.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(250.dp)
+                        .size(200.dp)
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
@@ -179,12 +190,12 @@ fun ConnectHero(
                 )
                 Box(
                     modifier = Modifier
-                        .size(216.dp)
+                        .size(184.dp)
                         .border(1.dp, ringColor.copy(alpha = 0.4f), CircleShape)
                 )
                 Box(
                     modifier = Modifier
-                        .size(190.dp)
+                        .size(164.dp)
                         .shadow(
                             elevation = if (isRunning) 24.dp else 8.dp,
                             shape = CircleShape,
@@ -193,7 +204,11 @@ fun ConnectHero(
                         )
                         .clip(CircleShape)
                         .background(ButtonBg)
-                        .border(width = 5.dp, color = ringColor, shape = CircleShape)
+                        .border(
+                            width = 4.dp,
+                            brush = Brush.verticalGradient(listOf(ringLight, ringColor)),
+                            shape = CircleShape
+                        )
                         .clickable { onAction(MainAction.ToggleService) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -201,18 +216,18 @@ fun ConnectHero(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(32.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(NeonGreen)
                             )
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(8.dp))
                             Text(
                                 text = "متصل شد",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
-                            Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(2.dp))
                             Text(
                                 text = formatDuration(elapsedSeconds),
                                 style = MaterialTheme.typography.bodyLarge,
@@ -221,11 +236,11 @@ fun ConnectHero(
                         }
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            PowerGlyph(color = Color.White, modifier = Modifier.size(64.dp))
-                            Spacer(Modifier.height(6.dp))
+                            PowerGlyph(color = Color.White, modifier = Modifier.size(52.dp))
+                            Spacer(Modifier.height(4.dp))
                             Text(
                                 text = "اتصال",
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )

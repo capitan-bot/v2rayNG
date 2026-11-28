@@ -72,7 +72,7 @@ fun SelectedServerCard(
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(14.dp),
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -115,7 +115,7 @@ fun SelectedServerCard(
                     .background(CardBorder)
             )
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
