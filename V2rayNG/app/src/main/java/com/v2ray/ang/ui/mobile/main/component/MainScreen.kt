@@ -172,6 +172,7 @@ fun MainScreen(
                 if (groups.isNotEmpty()) {
                     SubscriptionSections(
                         groups = groups,
+                        onAction = onAction,
                         mainViewModel = mainViewModel,
                         selectedGuid = selectedGuid,
                         onSelectServer = { groupId, guid ->
